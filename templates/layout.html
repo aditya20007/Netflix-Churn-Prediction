@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Netflix Churn Prediction{% endblock %}</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Background Animation -->
+    <div class="bg-animation">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <!-- Navigation -->
+    {% if current_user.is_authenticated %}
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="brand-icon">🎬</span>
+                <span class="brand-text">Netflix Churn</span>
+            </div>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                    📊 Dashboard
+                </a>
+                <a href="{{ url_for('predict_page') }}" class="nav-link {% if request.endpoint == 'predict_page' %}active{% endif %}">
+                    🔮 Predict
+                </a>
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('admin') }}" class="nav-link {% if request.endpoint == 'admin' %}active{% endif %}">
+                    ⚙️ Admin
+                </a>
+                {% endif %}
+            </div>
+            
+            <div class="nav-user">
+                <span class="user-name">{{ current_user.username }}</span>
+                <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container">
+                {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">
+                    <span>{{ message }}</span>
+                    <button onclick="this.parentElement.remove()" class="flash-close">×</button>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+    <div class="footer-content">
+        <h2>✨ Aditya Singh ✨</h2>
+
+        <p class="footer-links">
+                <a href="https://github.com/aditya20007" target="_blank">GitHub</a> •
+                <a href="https://www.linkedin.com/in/aditya-singh-bab941258" target="_blank">linkedin.com</a> •
+                <a href="#">API</a>
+            
+        
+        <p>© 2025 Aditya Singh — All Rights Reserved</p>
+
+        <p>Built with ❤️ using Flask + Anime UI</p>
+
+    </div>
+</footer>
+
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,514 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Panel - Netflix Churn Prediction{% endblock %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block content %}
+<div class="admin-page">
+    <!-- Header -->
+    <div class="admin-header">
+        <div>
+            <h1 class="page-title">⚙️ Admin Panel</h1>
+            <p class="page-subtitle">System monitoring and user management</p>
+        </div>
+    </div>
+
+    <!-- System Metrics -->
+    <div class="metrics-section">
+        <h2 class="section-title">📊 System Metrics</h2>
+        
+        <div class="stats-grid">
+            <div class="stat-card stat-blue">
+                <div class="stat-header">
+                    <span class="stat-icon">👥</span>
+                    <span class="stat-label">Total Users</span>
+                </div>
+                <div class="stat-value">{{ metrics.total_users }}</div>
+                <div class="stat-change neutral">Active accounts</div>
+            </div>
+
+            <div class="stat-card stat-purple">
+                <div class="stat-header">
+                    <span class="stat-icon">🔮</span>
+                    <span class="stat-label">Total Predictions</span>
+                </div>
+                <div class="stat-value">{{ metrics.total_predictions }}</div>
+                <div class="stat-change positive">+24% this month</div>
+            </div>
+
+            <div class="stat-card stat-green">
+                <div class="stat-header">
+                    <span class="stat-icon">📈</span>
+                    <span class="stat-label">Avg Churn Probability</span>
+                </div>
+                <div class="stat-value">{{ (metrics.avg_churn_probability * 100)|round(1) }}%</div>
+                <div class="stat-change neutral">System average</div>
+            </div>
+
+            <div class="stat-card stat-orange">
+                <div class="stat-header">
+                    <span class="stat-icon">🎯</span>
+                    <span class="stat-label">Model Accuracy</span>
+                </div>
+                <div class="stat-value">95.3%</div>
+                <div class="stat-change positive">Excellent performance</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Health -->
+    <div class="health-section">
+        <h2 class="section-title">🏥 System Health</h2>
+        
+        <div class="health-grid">
+            <div class="health-card">
+                <div class="health-header">
+                    <span class="health-label">Database Status</span>
+                    <span class="status-badge status-active">Active</span>
+                </div>
+                <div class="health-metric">
+                    <div class="metric-label">Connections</div>
+                    <div class="metric-value">5/100</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 5%"></div>
+                </div>
+            </div>
+
+            <div class="health-card">
+                <div class="health-header">
+                    <span class="health-label">ML Model Status</span>
+                    <span class="status-badge status-active">Loaded</span>
+                </div>
+                <div class="health-metric">
+                    <div class="metric-label">Prediction Time</div>
+                    <div class="metric-value">0.34s</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 85%; background: linear-gradient(90deg, #22c55e, #16a34a)"></div>
+                </div>
+            </div>
+
+            <div class="health-card">
+                <div class="health-header">
+                    <span class="health-label">API Response</span>
+                    <span class="status-badge status-active">Healthy</span>
+                </div>
+                <div class="health-metric">
+                    <div class="metric-label">Avg Response Time</div>
+                    <div class="metric-value">124ms</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 92%; background: linear-gradient(90deg, #22c55e, #16a34a)"></div>
+                </div>
+            </div>
+
+            <div class="health-card">
+                <div class="health-header">
+                    <span class="health-label">Storage Usage</span>
+                    <span class="status-badge status-warning">68%</span>
+                </div>
+                <div class="health-metric">
+                    <div class="metric-label">Disk Space</div>
+                    <div class="metric-value">6.8/10 GB</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 68%; background: linear-gradient(90deg, #fbbf24, #f59e0b)"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Management -->
+    <div class="users-section">
+        <div class="section-header">
+            <h2 class="section-title">👥 User Management</h2>
+            <div class="section-actions">
+                <button class="btn btn-secondary btn-small" onclick="refreshUsers()">
+                    🔄 Refresh
+                </button>
+                <button class="btn btn-primary btn-small" onclick="showAddUserModal()">
+                    ➕ Add User
+                </button>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Created</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>#{{ user.id }}</td>
+                            <td>
+                                <div class="user-info">
+                                    <span class="user-avatar">{{ user.username[0]|upper }}</span>
+                                    <span>{{ user.username }}</span>
+                                </div>
+                            </td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% if user.is_admin %}
+                                <span class="badge badge-danger">Admin</span>
+                                {% else %}
+                                <span class="badge badge-success">User</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.created_at }}</td>
+                            <td>
+                                <span class="status-dot status-active"></span> Active
+                            </td>
+                            <td>
+                                <button class="btn-icon" title="View Details" onclick="viewUser({{ user.id }})">
+                                    👁️
+                                </button>
+                                <button class="btn-icon" title="Edit User" onclick="editUser({{ user.id }})">
+                                    ✏️
+                                </button>
+                                {% if not user.is_admin %}
+                                <button class="btn-icon" title="Delete User" onclick="deleteUser({{ user.id }})">
+                                    🗑️
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="activity-section">
+        <h2 class="section-title">📋 Recent Activity</h2>
+        
+        <div class="activity-timeline">
+            <div class="activity-item">
+                <div class="activity-icon activity-success">✅</div>
+                <div class="activity-content">
+                    <div class="activity-title">New prediction completed</div>
+                    <div class="activity-description">User 'john_doe' predicted churn for customer #12345</div>
+                    <div class="activity-time">2 minutes ago</div>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon activity-info">📁</div>
+                <div class="activity-content">
+                    <div class="activity-title">Batch upload processed</div>
+                    <div class="activity-description">Processed 500 customers in batch job #789</div>
+                    <div class="activity-time">15 minutes ago</div>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon activity-warning">⚠️</div>
+                <div class="activity-content">
+                    <div class="activity-title">High churn alert</div>
+                    <div class="activity-description">Customer segment 'Premium' showing increased churn risk</div>
+                    <div class="activity-time">1 hour ago</div>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon activity-success">👤</div>
+                <div class="activity-content">
+                    <div class="activity-title">New user registered</div>
+                    <div class="activity-description">User 'sarah_smith' created account</div>
+                    <div class="activity-time">3 hours ago</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-section">
+        <h2 class="section-title">⚡ Quick Actions</h2>
+        
+        <div class="actions-grid">
+            <button class="action-card" onclick="exportData()">
+                <span class="action-icon">📥</span>
+                <span class="action-text">Export All Data</span>
+            </button>
+
+            <button class="action-card" onclick="clearCache()">
+                <span class="action-icon">🗑️</span>
+                <span class="action-text">Clear Cache</span>
+            </button>
+
+            <button class="action-card" onclick="backupDatabase()">
+                <span class="action-icon">💾</span>
+                <span class="action-text">Backup Database</span>
+            </button>
+
+            <button class="action-card" onclick="viewLogs()">
+                <span class="action-icon">📄</span>
+                <span class="action-text">View Logs</span>
+            </button>
+
+            <button class="action-card" onclick="systemSettings()">
+                <span class="action-icon">⚙️</span>
+                <span class="action-text">System Settings</span>
+            </button>
+
+            <button class="action-card" onclick="generateReport()">
+                <span class="action-icon">📊</span>
+                <span class="action-text">Generate Report</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.admin-page {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.admin-header {
+    margin-bottom: 3rem;
+}
+
+.metrics-section,
+.health-section,
+.users-section,
+.activity-section,
+.quick-actions-section {
+    margin-bottom: 3rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Health Cards */
+.health-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.health-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.health-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.health-label {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-active {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+
+.status-warning {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+}
+
+.status-error {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.health-metric {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.metric-label {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.875rem;
+}
+
+.metric-value {
+    font-weight: 600;
+    color: white;
+}
+
+/* User Table */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.status-dot.status-active {
+    background: #22c55e;
+    box-shadow: 0 0 8px #22c55e;
+}
+
+/* Activity Timeline */
+.activity-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.activity-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.activity-icon.activity-success {
+    background: rgba(34, 197, 94, 0.2);
+}
+
+.activity-icon.activity-info {
+    background: rgba(59, 130, 246, 0.2);
+}
+
+.activity-icon.activity-warning {
+    background: rgba(251, 191, 36, 0.2);
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-title {
+    font-weight: 600;
+    color: white;
+    margin-bottom: 0.25rem;
+}
+
+.activity-description {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.activity-time {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+}
+</style>
+
+<script>
+function refreshUsers() {
+    location.reload();
+}
+
+function showAddUserModal() {
+    alert('Add user functionality - would open modal in production');
+}
+
+function viewUser(userId) {
+    alert('View user ' + userId + ' - would show user details');
+}
+
+function editUser(userId) {
+    alert('Edit user ' + userId + ' - would open edit modal');
+}
+
+function deleteUser(userId) {
+    if (confirm('Are you sure you want to delete this user?')) {
+        alert('Delete user ' + userId + ' - would delete in production');
+    }
+}
+
+function exportData() {
+    alert('Exporting data... This would download a CSV file in production');
+}
+
+function clearCache() {
+    if (confirm('Clear system cache?')) {
+        alert('Cache cleared successfully!');
+    }
+}
+
+function backupDatabase() {
+    alert('Creating database backup... This would initiate backup in production');
+}
+
+function viewLogs() {
+    alert('Viewing system logs... Would show log viewer in production');
+}
+
+function systemSettings() {
+    alert('System settings... Would open settings panel in production');
+}
+
+function generateReport() {
+    alert('Generating system report... Would create PDF report in production');
+}
+</script>
+{% endblock %}

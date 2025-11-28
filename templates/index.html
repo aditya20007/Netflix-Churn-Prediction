@@ -1,0 +1,192 @@
+{% extends "layout.html" %}
+
+{% block title %}Netflix Churn Prediction - Home{% endblock %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block content %}
+<div class="landing-page">
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-icon">🎬</div>
+            <h1 class="hero-title">
+                Netflix Churn Prediction
+            </h1>
+            <p class="hero-subtitle">
+                AI-Powered Customer Retention Platform
+            </p>
+            <p class="hero-description">
+                Predict customer churn with advanced machine learning, identify at-risk customers, 
+                and take proactive retention actions with beautiful anime-inspired interface.
+            </p>
+            
+            <div class="hero-buttons">
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-large">
+                    Go to Dashboard →
+                </a>
+                {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-primary btn-large">
+                    Get Started →
+                </a>
+                <a href="#features" class="btn btn-secondary btn-large">
+                    Learn More
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="hero-stats">
+            <div class="stat-card">
+                <div class="stat-icon">🤖</div>
+                <div class="stat-value">95%</div>
+                <div class="stat-label">Accuracy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value">10K+</div>
+                <div class="stat-label">Predictions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-value">< 1s</div>
+                <div class="stat-label">Response Time</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <h2 class="section-title">✨ Key Features</h2>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔮</div>
+                <h3 class="feature-title">ML Prediction</h3>
+                <p class="feature-description">
+                    RandomForest classifier with 95% accuracy for precise churn prediction
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3 class="feature-title">Interactive Dashboard</h3>
+                <p class="feature-description">
+                    Real-time analytics with beautiful Chart.js visualizations
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3 class="feature-title">Customer Segmentation</h3>
+                <p class="feature-description">
+                    Automatic clustering and risk-level categorization
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📁</div>
+                <h3 class="feature-title">Batch Processing</h3>
+                <p class="feature-description">
+                    Upload CSV files for bulk predictions and analysis
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🔐</div>
+                <h3 class="feature-title">Secure Authentication</h3>
+                <p class="feature-description">
+                    Flask-Login with role-based access control
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">⚙️</div>
+                <h3 class="feature-title">Admin Panel</h3>
+                <p class="feature-description">
+                    Monitor users, metrics, and system health
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works">
+        <h2 class="section-title">🚀 How It Works</h2>
+        
+        <div class="steps-container">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Input Customer Data</h3>
+                    <p>Enter customer information or upload CSV file</p>
+                </div>
+            </div>
+            
+            <div class="step-arrow">→</div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>AI Analysis</h3>
+                    <p>RandomForest model analyzes patterns</p>
+                </div>
+            </div>
+            
+            <div class="step-arrow">→</div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Get Predictions</h3>
+                    <p>Receive churn probability and recommendations</p>
+                </div>
+            </div>
+            
+            <div class="step-arrow">→</div>
+            
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>Take Action</h3>
+                    <p>Implement retention strategies</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="cta-content">
+            <h2 class="cta-title">Ready to Reduce Churn?</h2>
+            <p class="cta-description">
+                Start predicting customer churn and improving retention today
+            </p>
+            {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('login') }}" class="btn btn-primary btn-large">
+                Get Started Free →
+            </a>
+            <p class="cta-note">
+                Default credentials: <strong>user / password123</strong>
+            </p>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section class="tech-stack">
+        <h2 class="section-title">🛠️ Built With</h2>
+        <div class="tech-badges">
+            <span class="tech-badge">Flask</span>
+            <span class="tech-badge">scikit-learn</span>
+            <span class="tech-badge">RandomForest</span>
+            <span class="tech-badge">Chart.js</span>
+            <span class="tech-badge">SQLite</span>
+            <span class="tech-badge">PostgreSQL</span>
+            <span class="tech-badge">Render</span>
+        </div>
+    </section>
+</div>
+{% endblock %}

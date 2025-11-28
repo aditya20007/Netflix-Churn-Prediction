@@ -1,0 +1,106 @@
+{% extends "layout.html" %}
+
+{% block title %}Register - Netflix Churn Prediction{% endblock %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block content %}
+<div class="auth-page">
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="auth-icon">📝</div>
+            <h1 class="auth-title">Create Account</h1>
+            <p class="auth-subtitle">Join Netflix Churn Prediction Platform</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('register') }}" class="auth-form">
+            <div class="form-group">
+                <label for="username" class="form-label">Username</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    class="form-input"
+                    placeholder="Choose a unique username"
+                    required
+                    minlength="3"
+                    maxlength="50"
+                    autofocus
+                >
+                <span class="form-help">3-50 characters, letters and numbers only</span>
+            </div>
+
+            <div class="form-group">
+                <label for="email" class="form-label">Email</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="form-input"
+                    placeholder="your.email@example.com"
+                    required
+                >
+                <span class="form-help">We'll never share your email</span>
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-input"
+                    placeholder="At least 8 characters"
+                    required
+                    minlength="8"
+                >
+                <span class="form-help">Minimum 8 characters</span>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password" class="form-label">Confirm Password</label>
+                <input 
+                    type="password" 
+                    id="confirm_password" 
+                    name="confirm_password" 
+                    class="form-input"
+                    placeholder="Re-enter your password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+                Create Account →
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>
+                Already have an account? 
+                <a href="{{ url_for('login') }}" class="auth-link">Sign In</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Client-side password validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const password = document.getElementById('password').value;
+    const confirm = document.getElementById('confirm_password').value;
+    
+    if (password !== confirm) {
+        e.preventDefault();
+        alert('Passwords do not match!');
+        return false;
+    }
+    
+    if (password.length < 8) {
+        e.preventDefault();
+        alert('Password must be at least 8 characters!');
+        return false;
+    }
+});
+</script>
+{% endblock %}

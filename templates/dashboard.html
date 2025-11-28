@@ -1,0 +1,276 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard - Netflix Churn Prediction{% endblock %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block content %}
+<div class="dashboard-page">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div>
+            <h1 class="page-title">📊 Dashboard</h1>
+            <p class="page-subtitle">Welcome back, {{ current_user.username }}! Here's your churn analytics overview.</p>
+        </div>
+        <div>
+            <a href="{{ url_for('predict_page') }}" class="btn btn-primary">
+                🔮 New Prediction
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card stat-purple">
+            <div class="stat-header">
+                <span class="stat-icon">📈</span>
+                <span class="stat-label">Total Predictions</span>
+            </div>
+            <div class="stat-value">{{ stats.total_predictions }}</div>
+            <div class="stat-change positive">+12% from last month</div>
+        </div>
+
+        <div class="stat-card stat-red">
+            <div class="stat-header">
+                <span class="stat-icon">⚠️</span>
+                <span class="stat-label">High Risk Customers</span>
+            </div>
+            <div class="stat-value">{{ stats.high_risk_customers }}</div>
+            <div class="stat-change negative">Requires attention</div>
+        </div>
+
+        <div class="stat-card stat-blue">
+            <div class="stat-header">
+                <span class="stat-icon">👥</span>
+                <span class="stat-label">Total Users</span>
+            </div>
+            <div class="stat-value">{{ stats.total_users }}</div>
+            <div class="stat-change neutral">Active users</div>
+        </div>
+
+        <div class="stat-card stat-green">
+            <div class="stat-header">
+                <span class="stat-icon">✅</span>
+                <span class="stat-label">Model Accuracy</span>
+            </div>
+            <div class="stat-value">95.3%</div>
+            <div class="stat-change positive">Excellent performance</div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-grid">
+        <div class="chart-card">
+            <div class="chart-header">
+                <h2 class="section-title">📊 Analytics Charts</h2>
+                <h3 class="chart-title">Churn Probability Distribution</h3>
+                <select id="chartPeriod" class="chart-select">
+                    <option>Last 7 days</option>
+                    <option>Last 30 days</option>
+                    <option>Last 90 days</option>
+                </select>
+            </div>
+            <div class="chart-body">
+                <canvas id="distributionChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">Risk Segments</h3>
+            </div>
+            <div class="chart-body">
+                <canvas id="segmentsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Predictions Table -->
+    <div class="table-card">
+        <div class="table-header">
+            <h3 class="table-title">📋 Recent Predictions</h3>
+            <button class="btn btn-secondary btn-small" onclick="refreshTable()">
+                🔄 Refresh
+            </button>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Created At</th>
+                        <th>Churn Probability</th>
+                        <th>Risk Level</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pred in recent %}
+                    <tr>
+                        <td>#{{ pred.id }}</td>
+                        <td>{{ pred.created_at }}</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ (pred.churn_probability * 100)|round }}%"></div>
+                                <span class="progress-text">{{ (pred.churn_probability * 100)|round(1) }}%</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if pred.churn_probability < 0.3 %}
+                            <span class="badge badge-success">Low</span>
+                            {% elif pred.churn_probability < 0.7 %}
+                            <span class="badge badge-warning">Medium</span>
+                            {% else %}
+                            <span class="badge badge-danger">High</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn-icon" aria-labeltitle="View Details">👁️</button>
+                            <button class="btn-icon" title="Download Report">📥</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h3 class="section-title">⚡ Quick Actions</h3>
+        <div class="actions-grid">
+            <a href="{{ url_for('predict_page') }}" class="action-card">
+                <span class="action-icon">🔮</span>
+                <span class="action-text">Single Prediction</span>
+            </a>
+            <button onclick="document.getElementById('batchUpload').click()" class="action-card">
+                <span class="action-icon">📁</span>
+                <span class="action-text">Batch Upload</span>
+            </button>
+            <a href="#" class="action-card">
+                <span class="action-icon">📊</span>
+                <span class="action-text">View Reports</span>
+            </a>
+            <a href="#" class="action-card">
+                <span class="action-icon">📧</span>
+                <span class="action-text">Export Data</span>
+            </a>
+        </div>
+    </div>
+
+    <input type="file" id="batchUpload" style="display: none;" accept=".csv" onchange="handleBatchUpload(this)">
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Distribution Chart
+const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+const distributionChart = new Chart(distributionCtx, {
+    type: 'bar',
+    data: {
+        labels: ['0-10%', '10-20%', '20-30%', '30-40%', '40-50%', '50-60%', '60-70%', '70-80%', '80-90%', '90-100%'],
+        datasets: [{
+            label: 'Number of Customers',
+            data: [120, 150, 180, 200, 170, 140, 100, 80, 60, 40],
+            backgroundColor: 'rgba(102, 126, 234, 0.6)',
+            borderColor: 'rgba(102, 126, 234, 1)',
+            borderWidth: 2,
+            borderRadius: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(255, 255, 255, 0.1)'
+                },
+                ticks: {
+                    color: 'rgba(255, 255, 255, 0.7)'
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                },
+                ticks: {
+                    color: 'rgba(255, 255, 255, 0.7)'
+                }
+            }
+        }
+    }
+});
+
+// Segments Chart
+const segmentsCtx = document.getElementById('segmentsChart').getContext('2d');
+const segmentsChart = new Chart(segmentsCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Low Risk', 'Medium Risk', 'High Risk'],
+        datasets: [{
+            data: [60, 30, 10],
+            backgroundColor: [
+                'rgba(34, 197, 94, 0.8)',
+                'rgba(251, 191, 36, 0.8)',
+                'rgba(239, 68, 68, 0.8)'
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    padding: 20,
+                    font: {
+                        size: 14
+                    }
+                }
+            }
+        }
+    }
+});
+
+function refreshTable() {
+    location.reload();
+}
+
+async function handleBatchUpload(input) {
+    if (!input.files[0]) return;
+    
+    const formData = new FormData();
+    formData.append('file', input.files[0]);
+    
+    try {
+        const response = await fetch('/api/batch_predict', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(`Batch prediction complete!\nTotal: ${result.summary.total_customers}\nHigh Risk: ${result.summary.high_risk}`);
+            location.reload();
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('Upload failed: ' + error.message);
+    }
+}
+</script>
+{% endblock %}

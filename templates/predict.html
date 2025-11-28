@@ -1,0 +1,421 @@
+{% extends "layout.html" %}
+
+{% block title %}Predict - Netflix Churn Prediction{% endblock %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block content %}
+<div class="predict-page">
+    <div class="predict-header">
+        <h1 class="page-title">🔮 Churn Prediction</h1>
+        <p class="page-subtitle">Enter customer information to predict churn probability</p>
+    </div>
+
+    <div class="predict-container">
+        <!-- Prediction Form -->
+        <div class="predict-form-card">
+            <form id="predictionForm" class="prediction-form">
+                <div class="form-section">
+                    <h3 class="form-section-title">📊 Basic Information</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Tenure (months)</label>
+                            <input type="number" name="tenure" class="form-input" min="0" max="72" value="12" required>
+                            <span class="form-help">How long customer has been with service</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Monthly Charges ($)</label>
+                            <input type="number" name="monthly_charges" class="form-input" min="0" step="0.01" value="29.99" required>
+                            <span class="form-help">Current monthly subscription fee</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Total Charges ($)</label>
+                        <input type="number" name="total_charges" class="form-input" min="0" step="0.01" value="359.88" required>
+                        <span class="form-help">Total amount paid over tenure</span>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="form-section-title">📝 Contract Details</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Contract Type</label>
+                        <select name="contract_type" class="form-input" required>
+                            <option value="Month-to-Month">Month-to-Month</option>
+                            <option value="One year">One Year</option>
+                            <option value="Two year">Two Year</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Payment Method</label>
+                        <select name="payment_method" class="form-input" required>
+                            <option value="Electronic check">Electronic Check</option>
+                            <option value="Mailed check">Mailed Check</option>
+                            <option value="Bank transfer">Bank Transfer</option>
+                            <option value="Credit card">Credit Card</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Internet Service</label>
+                        <select name="internet_service" class="form-input" required>
+                            <option value="Fiber optic">Fiber Optic</option>
+                            <option value="DSL">DSL</option>
+                            <option value="No">No Internet</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="form-section-title">✨ Additional Services</h3>
+                    
+                    <div class="form-checkboxes">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="streaming_tv" value="1">
+                            <span class="checkbox-text">📺 Streaming TV</span>
+                        </label>
+
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="streaming_movies" value="1">
+                            <span class="checkbox-text">🎬 Streaming Movies</span>
+                        </label>
+
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="tech_support" value="1">
+                            <span class="checkbox-text">🛠️ Tech Support</span>
+                        </label>
+
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="online_security" value="1">
+                            <span class="checkbox-text">🔒 Online Security</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-large btn-block">
+                    🔮 Predict Churn
+                </button>
+            </form>
+        </div>
+
+        <!-- Results Card -->
+        <div id="resultsCard" class="results-card" style="display: none;">
+            <div class="results-header">
+                <h3 class="results-title">Prediction Results</h3>
+                <button onclick="document.getElementById('resultsCard').style.display='none'" class="btn-close">×</button>
+            </div>
+
+            <div class="results-body">
+                <div class="churn-gauge">
+                    <div class="gauge-circle">
+                        <svg viewBox="0 0 200 200">
+                            <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="20"/>
+                            <circle id="gaugeProgress" cx="100" cy="100" r="90" fill="none" stroke="url(#gaugeGradient)" stroke-width="20" 
+                                stroke-linecap="round" stroke-dasharray="565.48" stroke-dashoffset="565.48" 
+                                transform="rotate(-90 100 100)" style="transition: stroke-dashoffset 2s ease"/>
+                            <defs>
+                                <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#667eea"/>
+                                    <stop offset="100%" style="stop-color:#f093fb"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="gauge-text">
+                            <div id="churnValue" class="gauge-value">--</div>
+                            <div class="gauge-label">Churn Probability</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="riskBadge" class="risk-badge"></div>
+
+                <div class="recommendations">
+                    <h4 class="recommendations-title">💡 Recommendations</h4>
+                    <ul id="recommendationsList" class="recommendations-list"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.predict-page {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.predict-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .predict-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.predict-form-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.form-section-title {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-help {
+    display: block;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 0.25rem;
+}
+
+.form-checkboxes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.checkbox-label:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.checkbox-text {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.results-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 2rem;
+}
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.results-title {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.btn-close:hover {
+    color: white;
+}
+
+.churn-gauge {
+    margin: 2rem 0;
+    display: flex;
+    justify-content: center;
+}
+
+.gauge-circle {
+    width: 200px;
+    height: 200px;
+    position: relative;
+}
+
+.gauge-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.gauge-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.gauge-label {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 0.5rem;
+}
+
+.risk-badge {
+    text-align: center;
+    padding: 1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin: 2rem 0;
+}
+
+.recommendations {
+    margin-top: 2rem;
+}
+
+.recommendations-title {
+    font-size: 1.125rem;
+    margin-bottom: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.recommendations-list {
+    list-style: none;
+    padding: 0;
+}
+
+.recommendations-list li {
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    color: rgba(209, 8, 216, 0.904);
+}
+</style>
+
+<script>
+document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = {};
+    
+    formData.forEach((value, key) => {
+        data[key] = value;
+    });
+    
+    // Convert checkboxes
+    data.streaming_tv = formData.has('streaming_tv') ? 1 : 0;
+    data.streaming_movies = formData.has('streaming_movies') ? 1 : 0;
+    data.tech_support = formData.has('tech_support') ? 1 : 0;
+    data.online_security = formData.has('online_security') ? 1 : 0;
+    
+    try {
+        const response = await fetch('/api/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            displayResults(result);
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('Prediction failed: ' + error.message);
+    }
+});
+
+function displayResults(result) {
+    const resultsCard = document.getElementById('resultsCard');
+    resultsCard.style.display = 'block';
+    
+    // Update gauge
+    const probability = result.churn_probability;
+    const percentage = (probability * 100).toFixed(1);
+    
+    document.getElementById('churnValue').textContent = percentage + '%';
+    
+    // Animate gauge
+    const circumference = 565.48;
+    const offset = circumference - (probability * circumference);
+    document.getElementById('gaugeProgress').style.strokeDashoffset = offset;
+    
+    // Update risk badge
+    const riskBadge = document.getElementById('riskBadge');
+    riskBadge.textContent = result.risk_level + ' Risk';
+    riskBadge.className = 'risk-badge';
+    
+    if (result.risk_level === 'Low') {
+        riskBadge.style.background = 'rgba(34, 197, 94, 0.2)';
+        riskBadge.style.color = '#22c55e';
+    } else if (result.risk_level === 'Medium') {
+        riskBadge.style.background = 'rgba(251, 191, 36, 0.2)';
+        riskBadge.style.color = '#fbbf24';
+    } else {
+        riskBadge.style.background = 'rgba(239, 68, 68, 0.2)';
+        riskBadge.style.color = '#ef4444';
+    }
+    
+    // Update recommendations
+    const recList = document.getElementById('recommendationsList');
+    recList.innerHTML = '';
+    result.recommendations.forEach(rec => {
+        const li = document.createElement('li');
+        li.textContent = rec;
+        recList.appendChild(li);
+    });
+    
+    // Scroll to results
+    resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+</script>
+<style>
+/* VISIBILITY FIX */
+select, input, .form-label { color: #fff !important; font-weight: 500 !important; }
+select, input { background: rgba(255, 255, 255, 0.15) !important; border: 2px solid rgba(255,255,255,0.3) !important; }
+select option { background: #de079e85 !important; color: #fff !important; }
+</style>
+{% endblock %}
