@@ -29,3 +29,4 @@ databases:
     databaseName: netflix_churn
     user: netflix_user
     plan: free
+    buildCommand: pip install -r requirements.txt
